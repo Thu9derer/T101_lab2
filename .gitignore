@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# this project
+linear.csv
+polynomial.csv
+.idea
 # C extensions
 *.so
 
