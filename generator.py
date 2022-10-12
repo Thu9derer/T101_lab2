@@ -112,28 +112,30 @@ def generate_poly(a, n, noise, filename, size=100):
 def polynomial_regression_numpy(filename):
     with open(filename, 'r') as f:
         data = np.loadtxt(f, delimiter=',')
+    # split to initial arrays
     x, y = np.hsplit(data, 2)
-    one_line = np.ones((100, 1))
-    new_x = np.hstack([one_line, x])  # добавление столбца с еденицами
-    tran_x = new_x.transpose()
+
+    # printing shapes is useful for debugging
+    print(np.shape(x))
+    print(np.shape(y))
+    # our model
     time_start = time()
-    mass_theta = np.linalg.pinv(tran_x.dot(new_x)).dot(tran_x).dot(y)
+    model = np.polyfit(np.transpose(x)[0], np.transpose(y)[0], 2)
     time_end = time()
-
-    print(f"pinv in {time_end - time_start} seconds")
-    h = mass_theta[1] * x + mass_theta[0]
-
+    print(f"polyfit in {time_end - time_start} seconds")
+    # our hypothesis for give x
+    # h = model[0] * x * x * x + model[1] * x * x + model[2] * x + model[3]
+    # and check if it's ok
     plt.title("Linear regression task")
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.plot(x, y, "b.", label='experiment')
+    x = np.sort(x, axis=0)
+    h = model[0] * x * x + model[1] * x + model[2]
     plt.plot(x, h, "r", label='model')
     plt.legend()
     plt.show()
-    print("Ex1: your code here - exact solution usin invert matrix")
-    mass_theta_t = mass_theta.transpose()
-    mass_theta_t[:, [1, 0]] = mass_theta_t[:, [0, 1]]  # замена местами коэффицентов т.к. check ругается
-    return mass_theta_t[0]
+    return model
 
 
 # Ex.2 gradient descent for linear regression without regularization
