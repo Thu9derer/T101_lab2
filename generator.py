@@ -124,7 +124,6 @@ def polynomial_regression_numpy(filename):
     time_end = time()
     print(f"polyfit in {time_end - time_start} seconds")
     # our hypothesis for give x
-    # h = model[0] * x * x * x + model[1] * x * x + model[2] * x + model[3]
     # and check if it's ok
     plt.title("Linear regression task")
     plt.xlabel("X")
@@ -206,7 +205,14 @@ if __name__ == "__main__":
 
     # ex2. find minimum with gradient descent
     # 0. generate date with function above
+    generate_linear(1, -3, 1, 'linear.csv', 100)
+    with open('linear.csv', 'r') as f:
+        data = np.loadtxt(f, delimiter=',')
+    train_data = data[:60]
+    test_data = data[60::1]
+    valid_data = data[80::1]
     # 1. shuffle data into train - test - valid
+
     # 2. call minuimize(...) and plot J(i)
     # 3. call check(theta1, theta2) to check results for optimal theta
 
