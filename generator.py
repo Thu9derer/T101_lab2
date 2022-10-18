@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
-
+from sympy import *
 
 # generates x and y numpy arrays for
 # y = a*x + b + a * noise
@@ -153,8 +153,17 @@ def gradient_descent_step(dJ, theta, alpha):
 
 
 # get gradient over all xy dataset - gradient descent
-def get_dJ(x, y, theta):
-    theta_new = theta
+def get_dJ(x, y, theta, alpha):
+    itog_theta = []
+    theta_new = 0
+    srez = np.array(x[:, 1]).reshape(60, 1)
+    h = theta[0] + theta[1] * srez
+
+    for i in range(0, len(theta)):
+        srez = np.array(x[:, i]).reshape(60, 1)
+        summ = ((h - y) * srez).sum(axis=0)
+        theta_new = theta[i] - alpha * 1/60 * summ
+        itog_theta.append(theta_new)
     print("your code goes here - calculate new theta")
     return theta_new
 
@@ -176,13 +185,15 @@ def get_dJ_sgd(x, y, theta):
 # try each of gradient decsent (complete, minibatch, sgd) for varius alphas
 # L - number of iterations
 # plot results as J(i)
-def minimize(theta, x, y, L):
+def minimize(x, y, L):
+    alpha = 0.01
     # n - number of samples in learning subset, m - ...
-    n = 12345  # <-- calculate it properly!
-    theta = np.zeros(n)  # you can try random initialization
+    n = 2  # <-- calculate it properly!
+    theta = np.ones(n)  # you can try random initialization
     dJ = np.zeros(n)
     for i in range(0, L):
-        theta = get_dJ(x, y, theta)  # here you should try different gradient descents
+        theta = get_dJ(x, y, theta, alpha)  # here you should try different gradient descents
+        print(theta)
         J = 0  # here you should calculate it properly
     # and plot J(i)
     print("your code goes here")
@@ -190,30 +201,36 @@ def minimize(theta, x, y, L):
 
 
 if __name__ == "__main__":
-    generate_linear(1, -3, 1, 'linear.csv', 100)
-    model_np = linear_regression_numpy("linear.csv")
-    print(f"Is model correct?\n{check(model_np, np.array([1, -3]))}")
-    mass_theta_np = linear_regression_exact("linear.csv")
-    print(f"Is model correct?\n{check(mass_theta_np, np.array([1, -3]))}")
-    # ex1 . - exact solution
+    # generate_linear(1, -3, 1, 'linear.csv', 100)
+    # model_np = linear_regression_numpy("linear.csv")
+    # print(f"Is model correct?\n{check(model_np, np.array([1, -3]))}")
+    # mass_theta_np = linear_regression_exact("linear.csv")
+    # print(f"Is model correct?\n{check(mass_theta_np, np.array([1, -3]))}")
+    # # ex1 . - exact solution
     # model_exact = linear_regression_exact("linear.csv")
     # check(model_exact, np.array([-3,1]))
-
-    # ex1. polynomial with numpy
-    generate_poly([1, 2, 3], 2, 0.5, 'polynomial.csv')
-    polynomial_regression_numpy("polynomial.csv")
+    #
+    # # ex1. polynomial with numpy
+    # generate_poly([1, 2, 3], 2, 0.5, 'polynomial.csv')
+    # polynomial_regression_numpy("polynomial.csv")
 
     # ex2. find minimum with gradient descent
+
     # 0. generate date with function above
     generate_linear(1, -3, 1, 'linear.csv', 100)
+
+    # 1. shuffle data into train - test - valid
     with open('linear.csv', 'r') as f:
         data = np.loadtxt(f, delimiter=',')
     train_data = data[:60]
     test_data = data[60::1]
     valid_data = data[80::1]
-    # 1. shuffle data into train - test - valid
-
+    x, y = np.hsplit(train_data, 2)
+    one_col = np.ones((60, 1))
+    x = np.hstack([one_col, x])
     # 2. call minuimize(...) and plot J(i)
+
+    minimize(x, y, 5)
     # 3. call check(theta1, theta2) to check results for optimal theta
 
     # ex3. polinomial regression
