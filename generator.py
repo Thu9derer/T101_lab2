@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from time import time
 from sympy import *
 
+
 # generates x and y numpy arrays for
 # y = a*x + b + a * noise
 # in range -1 .. 1
@@ -147,25 +148,15 @@ def polynomial_regression_numpy(filename):
 # x and y are both vectors
 
 def gradient_descent_step(dJ, theta, alpha):
-    print("your code goes here")
-
-    return (theta)
+    theta_new = theta - alpha * 1/60 * dJ
+    return theta_new
 
 
 # get gradient over all xy dataset - gradient descent
-def get_dJ(x, y, theta, alpha):
-    itog_theta = []
-    theta_new = 0
-    srez = np.array(x[:, 1]).reshape(60, 1)
-    h = theta[0] + theta[1] * srez
-
-    for i in range(0, len(theta)):
-        srez = np.array(x[:, i]).reshape(60, 1)
-        summ = ((h - y) * srez).sum(axis=0)
-        theta_new = theta[i] - alpha * 1/60 * summ
-        itog_theta.append(theta_new)
-    print("your code goes here - calculate new theta")
-    return theta_new
+def get_dJ(x, y, theta):
+    h = (theta.transpose()).dot(x.transpose()).transpose()
+    dJ = ((h - y).transpose()).dot(x)
+    return dJ
 
 
 # get gradient over all minibatch of size M of xy dataset - minibatch gradient descent
@@ -189,11 +180,10 @@ def minimize(x, y, L):
     alpha = 0.01
     # n - number of samples in learning subset, m - ...
     n = 2  # <-- calculate it properly!
-    theta = np.ones(n)  # you can try random initialization
-    dJ = np.zeros(n)
+    theta = np.ones((n, 1))  # you can try random initialization
     for i in range(0, L):
-        theta = get_dJ(x, y, theta, alpha)  # here you should try different gradient descents
-        print(theta)
+        dJ = get_dJ(x, y, theta)  # here you should try different gradient descents
+        gradient_descent_step(dJ, theta, alpha)
         J = 0  # here you should calculate it properly
     # and plot J(i)
     print("your code goes here")
