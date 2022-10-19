@@ -154,8 +154,8 @@ def gradient_descent_step(dJ, theta, alpha):
 
 # get gradient over all xy dataset - gradient descent
 def get_dJ(x, y, theta):
-    h = (theta.transpose()).dot(x.transpose()).transpose()
-    dJ = ((h - y).transpose()).dot(x)
+    h = theta.dot(x.transpose())
+    dJ = (h - y).dot(x)
     return dJ
 
 
@@ -177,17 +177,22 @@ def get_dJ_sgd(x, y, theta):
 # L - number of iterations
 # plot results as J(i)
 def minimize(x, y, L):
-    alpha = 0.01
+    alpha = 0.15
     # n - number of samples in learning subset, m - ...
     n = 2  # <-- calculate it properly!
-    theta = np.ones((n, 1))  # you can try random initialization
+    theta = np.ones((1, n))  # you can try random initialization
     for i in range(0, L):
         dJ = get_dJ(x, y, theta)  # here you should try different gradient descents
-        gradient_descent_step(dJ, theta, alpha)
-        J = 0  # here you should calculate it properly
+        theta = gradient_descent_step(dJ, theta, alpha)
+        alpha -= 0.0002
+        h = theta.dot(x.transpose())
+        J = 1/120 * (np.square(h - y)).sum(axis=1)  # here you should calculate it properly
+        plt.plot(i, J, "b.")
+    plt.legend()
+    plt.show()
     # and plot J(i)
     print("your code goes here")
-    return
+    return theta
 
 
 if __name__ == "__main__":
@@ -219,8 +224,8 @@ if __name__ == "__main__":
     one_col = np.ones((60, 1))
     x = np.hstack([one_col, x])
     # 2. call minuimize(...) and plot J(i)
-
-    minimize(x, y, 5)
+    y = y.transpose()
+    print(minimize(x, y, 100))
     # 3. call check(theta1, theta2) to check results for optimal theta
 
     # ex3. polinomial regression
