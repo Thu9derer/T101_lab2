@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
+
 from sympy import *
 
 
@@ -160,17 +161,17 @@ def get_dJ(x, y, theta):
 
 
 # get gradient over all minibatch of size M of xy dataset - minibatch gradient descent
-def get_dJ_minibatch(x, y, theta, M):
-    theta_new = theta
-    print("your code goes here - calculate new theta")
-    return theta_new
+def get_dJ_minibatch(x, y, theta):
+    h = theta.dot(x.transpose())
+    dJ = (h - y).dot(x)
+    return dJ
 
 
 # get gradient over all minibatch of single sample from xy dataset - stochastic gradient descent
 def get_dJ_sgd(x, y, theta):
-    theta_new = theta
-    print("your code goes here - calculate new theta")
-    return theta_new
+    h = theta.dot(x.transpose())
+    dJ = (h - y).dot(x)
+    return dJ
 
 
 # try each of gradient decsent (complete, minibatch, sgd) for varius alphas
@@ -190,8 +191,25 @@ def minimize(x, y, L):
         plt.plot(i, J, "b.")
     plt.legend()
     plt.show()
-    # and plot J(i)
-    print("your code goes here")
+    return theta
+
+
+def minimize_sgd(x, y, L):
+    alpha = 0.30
+    n = 2  # <-- calculate it properly!
+    theta = np.ones((1, n))  # you can try random initialization
+    for iter in range(0, L):
+        for i, line in enumerate(x):
+            one_y = np.reshape(y[0][i], (1, 1))
+            line = line.reshape((1, 2))
+            dJ = get_dJ_sgd(line, one_y, theta)  # here you should try different gradient descents
+            theta = gradient_descent_step(dJ, theta, alpha)
+            alpha -= 0.00002
+            h = theta.dot(line.transpose())
+            J = 1/120 * (np.square(h - one_y))  # here you should calculate it properly
+        plt.plot(iter, J, "b.")
+    plt.legend()
+    plt.show()
     return theta
 
 
@@ -226,6 +244,8 @@ if __name__ == "__main__":
     # 2. call minuimize(...) and plot J(i)
     y = y.transpose()
     print(minimize(x, y, 100))
+
+    print(minimize_sgd(x, y, 50))
     # 3. call check(theta1, theta2) to check results for optimal theta
 
     # ex3. polinomial regression
