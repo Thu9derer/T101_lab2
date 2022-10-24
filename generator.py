@@ -194,6 +194,25 @@ def minimize(x, y, L):
     return theta
 
 
+def minimize_minibatch(x, y, L, M):  # M-size minibatch
+    alpha = 0.15
+    n = 2  # <-- calculate it properly!
+    theta = np.ones((1, n))  # you can try random initialization
+    x = np.vsplit(x, np.shape(x)[0] / M)
+    y = np.hsplit(y, np.shape(y)[1] / M)
+    for i in range(0, L):
+        for x_minib, y_minib in list(zip(x, y)):
+            dJ = get_dJ_minibatch(x_minib, y_minib, theta)  # here you should try different gradient descents
+            theta = gradient_descent_step(dJ, theta, alpha)
+            alpha -= 0.00002
+            h = theta.dot(x_minib.transpose())
+            J = 1 / 120 * (np.square(h - y_minib)).sum(axis=1)  # here you should calculate it properly
+        plt.plot(i, J, "b.")
+    plt.legend()
+    plt.show()
+    return theta
+
+
 def minimize_sgd(x, y, L):
     alpha = 0.30
     n = 2  # <-- calculate it properly!
@@ -246,6 +265,8 @@ if __name__ == "__main__":
     print(minimize(x, y, 100))
 
     print(minimize_sgd(x, y, 50))
+
+    print(minimize_minibatch(x, y, 60, 5))
     # 3. call check(theta1, theta2) to check results for optimal theta
 
     # ex3. polinomial regression
