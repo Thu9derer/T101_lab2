@@ -1,10 +1,8 @@
+from random import random
+
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
-
-from sympy import *
-
-
 # generates x and y numpy arrays for
 # y = a*x + b + a * noise
 # in range -1 .. 1
@@ -148,8 +146,8 @@ def polynomial_regression_numpy(filename):
 # dJ(theta) - gradient, i.e. partial derivatives of J over theta - dJ/dtheta_i (shape is 1 x N - the same as theta)
 # x and y are both vectors
 
-def gradient_descent_step(dJ, theta, alpha):
-    theta_new = theta - alpha * 1/60 * dJ
+def gradient_descent_step(dJ, theta, alpha, size):
+    theta_new = theta - alpha * 1/size * dJ
     return theta_new
 
 
@@ -177,55 +175,54 @@ def get_dJ_sgd(x, y, theta):
 # try each of gradient decsent (complete, minibatch, sgd) for varius alphas
 # L - number of iterations
 # plot results as J(i)
-def minimize(x, y, L):
-    alpha = 0.15
-    # n - number of samples in learning subset, m - ...
-    n = 2  # <-- calculate it properly!
-    theta = np.ones((1, n))  # you can try random initialization
+def minimize(x, y, L, degree, size):
+    alpha = 0.205
+    theta = np.ones((1, degree + 1))  # you can try random initialization
     for i in range(0, L):
         dJ = get_dJ(x, y, theta)  # here you should try different gradient descents
-        theta = gradient_descent_step(dJ, theta, alpha)
-        alpha -= 0.0002
+        theta = gradient_descent_step(dJ, theta, alpha, size)
+        alpha -= 0.00005
         h = theta.dot(x.transpose())
-        J = 1/120 * (np.square(h - y)).sum(axis=1)  # here you should calculate it properly
+        J = 1/ (2 * size) * (np.square(h - y)).sum(axis=1)  # here you should calculate it properly
         plt.plot(i, J, "b.")
     plt.legend()
     plt.show()
     return theta
 
 
-def minimize_minibatch(x, y, L, M):  # M-size minibatch
+def minimize_minibatch(x, y, L, M, degree, size):  # M-size minibatch
     alpha = 0.15
-    n = 2  # <-- calculate it properly!
-    theta = np.ones((1, n))  # you can try random initialization
-    x = np.vsplit(x, np.shape(x)[0] / M)
-    y = np.hsplit(y, np.shape(y)[1] / M)
+    theta = np.ones((1, degree + 1))  # you can try random initialization
+    size_minib = np.shape(x)[0] / M
+    x = np.vsplit(x, size_minib)
+    y = np.hsplit(y, size_minib)
     for i in range(0, L):
-        for x_minib, y_minib in list(zip(x, y)):
-            dJ = get_dJ_minibatch(x_minib, y_minib, theta)  # here you should try different gradient descents
-            theta = gradient_descent_step(dJ, theta, alpha)
-            alpha -= 0.00002
-            h = theta.dot(x_minib.transpose())
-            J = 1 / 120 * (np.square(h - y_minib)).sum(axis=1)  # here you should calculate it properly
+        index = int(size_minib * random())
+        x_minib = x[index]
+        y_minib = y[index]
+        dJ = get_dJ_minibatch(x_minib, y_minib, theta)  # here you should try different gradient descents
+        theta = gradient_descent_step(dJ, theta, alpha, size)
+        alpha -= 0.00002
+        h = theta.dot(x_minib.transpose())
+        J = 1 / (2 * size) * (np.square(h - y_minib)).sum(axis=1)  # here you should calculate it properly
         plt.plot(i, J, "b.")
     plt.legend()
     plt.show()
     return theta
 
 
-def minimize_sgd(x, y, L):
-    alpha = 0.30
-    n = 2  # <-- calculate it properly!
-    theta = np.ones((1, n))  # you can try random initialization
+def minimize_sgd(x, y, L, degree, size):
+    alpha = 0.20
+    theta = np.ones((1, degree + 1))  # you can try random initialization
     for iter in range(0, L):
-        for i, line in enumerate(x):
-            one_y = np.reshape(y[0][i], (1, 1))
-            line = line.reshape((1, 2))
-            dJ = get_dJ_sgd(line, one_y, theta)  # here you should try different gradient descents
-            theta = gradient_descent_step(dJ, theta, alpha)
-            alpha -= 0.00002
-            h = theta.dot(line.transpose())
-            J = 1/120 * (np.square(h - one_y))  # here you should calculate it properly
+        index = int(size * random())
+        line_x = np.reshape(x[index], (1, degree + 1))
+        one_y = np.reshape(y[0][index], (1, 1))
+        dJ = get_dJ_sgd(line_x, one_y, theta)  # here you should try different gradient descents
+        theta = gradient_descent_step(dJ, theta, alpha, size)
+        alpha -= 0.00002
+        h = theta.dot(line_x.transpose())
+        J = 1/(2 * size) * (np.square(h - one_y))  # here you should calculate it properly
         plt.plot(iter, J, "b.")
     plt.legend()
     plt.show()
@@ -249,28 +246,48 @@ if __name__ == "__main__":
     # ex2. find minimum with gradient descent
 
     # 0. generate date with function above
-    generate_linear(1, -3, 1, 'linear.csv', 100)
+    size = 100
+    generate_linear(3, -5, 1, 'linear.csv', size)
 
     # 1. shuffle data into train - test - valid
     with open('linear.csv', 'r') as f:
         data = np.loadtxt(f, delimiter=',')
-    train_data = data[:60]
-    test_data = data[60::1]
-    valid_data = data[80::1]
+    size_train_data = int(size / 10 * 8)
+    size_test_data = int(size / 10)
+    train_data = data[:size_train_data]
+    test_data = data[size_train_data:size_train_data+size_test_data:1]
+    valid_data = data[size_train_data+size_test_data::1]
     x, y = np.hsplit(train_data, 2)
-    one_col = np.ones((60, 1))
+    one_col = np.ones((size_train_data, 1))
     x = np.hstack([one_col, x])
     # 2. call minuimize(...) and plot J(i)
     y = y.transpose()
-    print(minimize(x, y, 100))
+    degree = 1
+    print(minimize(x, y, 150, degree, size_train_data))
 
-    print(minimize_sgd(x, y, 50))
+    print(minimize_sgd(x, y, 50, degree, size_train_data))
 
-    print(minimize_minibatch(x, y, 60, 5))
+    print(minimize_minibatch(x, y, 60, 5, degree, size_train_data))
     # 3. call check(theta1, theta2) to check results for optimal theta
 
     # ex3. polinomial regression
     # 0. generate date with function generate_poly for degree=3, use size = 10, 20, 30, ... 100
+    size = 100
+    degree = 3
+    generate_poly([1, 2, 3, 4], degree, 0.5, 'polynomial.csv', 100)
+    with open('polynomial.csv', 'r') as f:
+        data = np.loadtxt(f, delimiter=',')
+
+    x, y = np.hsplit(data, 2)
+    full_x = x
+    for i in range(2, degree + 1):
+        full_x = np.hstack([full_x, x**i])
+    one_col = np.ones((size, 1))
+    x = np.hstack([one_col, full_x])
+    y = y.transpose()
+    print(minimize(x, y, 3000, degree, size))
+    print(minimize_sgd(x, y, 8000, degree, size))
+    print(minimize_minibatch(x, y, 800, 5, degree, size))
     # for each size:
     # 1. shuffle data into train - test - valid
     # Now we're going to try different degrees of model to aproximate our data, set degree=1 (linear regression)
